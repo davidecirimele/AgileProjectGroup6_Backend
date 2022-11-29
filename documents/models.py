@@ -6,7 +6,7 @@ from courses.models import Discipline
 # Create your models here.
 
 class Document(models.Model):
-    id_number = models.CharField(max_length=10)
+    id_number = models.CharField(max_length=10, unique=True)
     type = models.CharField(max_length=10)
     country_of_issue = models.CharField(max_length=20)
     date_of_issue = models.DateField()
@@ -18,7 +18,7 @@ class Document(models.Model):
 
 
 class SecondaryEducation(models.Model):
-    student_id = models.ForeignKey(Document, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Document, on_delete=models.CASCADE, to_field='id_number')
     year_of_enrollment = models.DateField()
     year_of_graduation = models.DateField()
     country = models.CharField(max_length=10)
@@ -28,7 +28,7 @@ class SecondaryEducation(models.Model):
 
 
 class BachelorsDegree(models.Model):
-    student_id = models.ForeignKey(Document, on_delete=models.PROTECT)
+    student_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
     university_nation = models.CharField(max_length=15)
     year_of_enrollment = models.DateField()
     year_of_graduation = models.DateField()
@@ -38,10 +38,10 @@ class BachelorsDegree(models.Model):
     discipline = models.ForeignKey(Discipline, on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.student
+        return self.student_id
 
 class MastersDegree(models.Model):
-    student_id = models.ForeignKey(Document, on_delete=models.PROTECT)
+    student_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
     university_nation = models.CharField(max_length=15)
     year_of_enrollment = models.DateField()
     year_of_graduation = models.DateField()
@@ -51,10 +51,10 @@ class MastersDegree(models.Model):
     discipline = models.ForeignKey(Discipline, on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.student
+        return self.student_id
 
 class Doctorate(models.Model):
-    student_id = models.ForeignKey(Document, on_delete=models.PROTECT)
+    student_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
     university_nation = models.CharField(max_length=15)
     year_PhD_started = models.DateField()
     year_PhD_ended = models.DateField()
@@ -64,10 +64,10 @@ class Doctorate(models.Model):
     discipline = models.ForeignKey(Discipline, on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.student
+        return self.student_id
 
 class Student(models.Model):
-    document_id = models.ForeignKey(Document, on_delete=models.PROTECT)
+    document_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
     secondary_education = models.ForeignKey(SecondaryEducation, on_delete=models.PROTECT)
     bachelors_degree = models.ForeignKey(BachelorsDegree, on_delete=models.PROTECT)
     masters_degree = models.ForeignKey(MastersDegree, on_delete=models.PROTECT)

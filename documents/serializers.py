@@ -18,9 +18,19 @@ class SecondaryEducationSerializer(serializers.ModelSerializer):
 
 class BachelorsDegreeSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('student', 'university_nation', 'year_of_enrollment', 'year_of_graduation', 'bachelors_grade',
-                  'minimum_bachelor_mark', 'maximum_bachelor_mark')
+        fields = ('student_id', 'university_nation', 'year_of_enrollment', 'year_of_graduation', 'bachelors_grade',
+                  'minimum_bachelor_mark', 'maximum_bachelor_mark','discipline')
         model = BachelorsDegree
+
+class MastersDegreeSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('student_id', 'university_nation', 'year_of_enrollment', 'year_of_graduation', 'masters_grade',
+                  'minimum_masters_grade', 'maximum_masters_grade','discipline')
+
+class DoctorateSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('student_id', 'university_nation', 'year_PhD_started', 'year_PhD_ended', 'doctorate_grade',
+                  'minimum_doctorate_mark', 'maximum_doctorate_mark','discipline')
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
