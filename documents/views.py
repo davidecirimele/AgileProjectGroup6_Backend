@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import *
 from rest_framework import viewsets
 
 from documents.models import Document, SecondaryEducation, BachelorsDegree, Student, MastersDegree, Doctorate
@@ -11,19 +12,28 @@ from documents.forms import *
 # Create your views here.
 
 class DocumentViewSet(viewsets.ModelViewSet):
+    queryset = Document.objects.all()
     serializer_class = DocumentSerializer
 
-    def addIdentityDocument(id, type, country, issue, expiry, authority):
+    def addIdentityDocument(request):
+        if request.method == "POST":
+            form = DocumentIDform(request.POST)
+            #if form.is_valid():
+            form.save()
+        else:
+            form = DocumentIDform()
+        return HttpResponse()
+        #id number is unique, so a document can be added only if not exists in the database
+        #doc = Document(id_number=id, type=type, country_of_issue=country, date_of_issue=issue,
+        #               date_of_expiration=expiry, authority_issuing_the_document=authority)
 
-        doc = Document(id_number=id, type=type, country_of_issue=country, date_of_issue=issue,
-                       date_of_expiration=expiry, authority_issuing_the_document=authority)
+        #doc.save()
 
-        doc.save()
 
     def getDocuments(self):
         return self.queryset
 
-    def getDocumentById(id):
+    def getDocumentById(self,id):
         return Document.objects.filter(id_number=id)
 
 

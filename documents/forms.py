@@ -3,7 +3,7 @@ from django import forms
 from documents.models import Document
 
 
-class DocumentIDform(forms.ModelForm):
+class DocumentIDform(forms.Form):
     id_number = forms.CharField(max_length=10)
     type = forms.CharField(max_length=10)
     country_of_issue = forms.CharField(max_length=20)
@@ -11,7 +11,7 @@ class DocumentIDform(forms.ModelForm):
     date_of_expiration = forms.DateField(input_formats=("%d/%m/%Y",))
     authority_issuing_the_document = forms.CharField(max_length=20)
 
-class SecondaryEducationForm(forms.ModelForm):
+class SecondaryEducationForm(forms.Form):
     student_id = forms.CharField(max_length=10)
     year_of_enrollment = forms.DateField(input_formats=("%d/%m/%Y",))
     year_of_graduation = forms.DateField(input_formats=("%d/%m/%Y",))
