@@ -1,91 +1,303 @@
-from django.shortcuts import render
-from django.http import *
+from django.http import Http404
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from documents.models import Document, SecondaryEducation, BachelorsDegree, Student, MastersDegree, Doctorate
+from documents.models import SecondaryEducation, BachelorsDegree, Student, MastersDegree, Doctorate, Document
 from documents.serializers import DocumentSerializer, SecondaryEducationSerializer, BachelorsDegreeSerializer, \
     StudentSerializer, MastersDegreeSerializer, DoctorateSerializer
 
-from documents.forms import *
 
-
-# Create your views here.
-
-class DocumentViewSet(viewsets.ModelViewSet):
-    queryset = Document.objects.all()
+class DocumentIdViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentSerializer
+    queryset = Document.objects.all()
 
-    def addIdentityDocument(request):
-        if request.method == "POST":
-            form = DocumentIDform(request.POST)
-            #if form.is_valid():
-            form.save()
+class DocumentIDAPIView(APIView):
+
+    def get_document(self,pk):
+        try:
+            return Document.objects.get(pk = pk)
+        except Document.DoesNotExist:
+            return Http404
+
+    def get(self,request,pk = None,format = None):
+        if pk:
+            data = self.get_document(pk)
+            serializer = DocumentSerializer(data)
         else:
-            form = DocumentIDform()
-        return HttpResponse()
-        #id number is unique, so a document can be added only if not exists in the database
-        #doc = Document(id_number=id, type=type, country_of_issue=country, date_of_issue=issue,
-        #               date_of_expiration=expiry, authority_issuing_the_document=authority)
+            data = Document.objects.all()
+            serializer = DocumentSerializer(data, many=True)
 
-        #doc.save()
+            return Response(serializer.data)
+
+    def post(self,request,format=None):
+        data = request.data
+        serializer = DocumentSerializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        response = Response()
+
+        response.data = {
+            'message':'Document added succesfully',
+            'data':serializer.data
+        }
+
+        return response
+
+    def delete(self, request, pk, format = None):
+        document_to_delete = Document.objects.get(pk = pk)
+
+        document_to_delete.delete()
+
+        return Response({
+            'message':'Document deleted succesfully'
+        })
 
 
-    def getDocuments(self):
-        return self.queryset
-
-    def getDocumentById(self,id):
-        return Document.objects.filter(id_number=id)
 
 
 class SecondaryEducationViewSet(viewsets.ModelViewSet):
     serializer_class = SecondaryEducationSerializer
+    queryset = SecondaryEducation.objects.all()
 
-    def addSecondaryEducation(id, enrollment,graduation,country):
-        se = SecondaryEducation(student_id= id, year_of_enrollment=enrollment,
-                                year_of_graduation=graduation,country=country)
-        se.save()
+class SecondaryEducationAPIView(APIView):
 
-    def getSecondaryEducationOfTheStudent(id):
-        return SecondaryEducation.objects.filter(student_id=id)
+    def get_secondaryeducation(self,pk):
+        try:
+            return SecondaryEducation.objects.get(pk = pk)
+        except SecondaryEducation.DoesNotExist:
+            return Http404
+
+    def get(self,request,pk = None,format = None):
+        if pk:
+            data = self.get_secondaryeducation(pk)
+            serializer = SecondaryEducationSerializer(data)
+        else:
+            data = SecondaryEducation.objects.all()
+            serializer = SecondaryEducationSerializer(data, many=True)
+
+            return Response(serializer.data)
+
+    def post(self,request,format=None):
+        data = request.data
+        serializer = SecondaryEducationSerializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        response = Response()
+
+        response.data = {
+            'message':'Document added succesfully',
+            'data':serializer.data
+        }
+
+        return response
+
+    def delete(self, request, pk, format = None):
+        document_to_delete = SecondaryEducation.objects.get(pk = pk)
+
+        document_to_delete.delete()
+
+        return Response({
+            'message':'Document deleted succesfully'
+        })
+
 
 class BachelorsDegreeViewSet(viewsets.ModelViewSet):
     serializer_class = BachelorsDegreeSerializer
+    queryset = BachelorsDegree.objects.all()
 
-    def addBachelorsDegree(id,university,enrollment,graduation,grade,min,max,discipline):
-        bd = BachelorsDegree(student_id=id,university_nation=university,year_of_enrollment=enrollment,
-                             year_of_graduation=graduation,bachelors_grade=grade,minimum_bachelor_mark=min,
-                             maximum_bachelor_mark=max,discipline=discipline)
-        bd.save()
+class BachelorsDegreeAPIView(APIView):
 
-    def getBachelorsDegreeOfTheStudent(id):
-        return BachelorsDegree.objects.filter(student_id=id)
+    def get_bachelorsdegree(self,pk):
+        try:
+            return BachelorsDegree.objects.get(pk = pk)
+        except BachelorsDegree.DoesNotExist:
+            return Http404
 
+    def get(self,request,pk = None,format = None):
+        if pk:
+            data = self.get_bachelorsdegree(pk)
+            serializer = BachelorsDegreeSerializer(data)
+        else:
+            data = BachelorsDegree.objects.all()
+            serializer = BachelorsDegreeSerializer(data, many=True)
+
+            return Response(serializer.data)
+
+    def post(self,request,format=None):
+        data = request.data
+        serializer = BachelorsDegreeSerializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        response = Response()
+
+        response.data = {
+            'message':'Document added succesfully',
+            'data':serializer.data
+        }
+
+        return response
+
+    def delete(self, request, pk, format = None):
+        document_to_delete = BachelorsDegree.objects.get(pk = pk)
+
+        document_to_delete.delete()
+
+        return Response({
+            'message':'Document deleted succesfully'
+        })
 
 class MastersDegreeViewSet(viewsets.ModelViewSet):
     serializer_class = MastersDegreeSerializer
+    queryset = MastersDegree.objects.all()
 
-    def addMastersDegree(id, university, enrollment, graduation, grade, min, max, discipline):
-        md = MastersDegree(student_id=id, university_nation=university, year_of_enrollment=enrollment,
-                             year_of_graduation=graduation, masters_grade=grade, minimum_masters_grade=min,
-                             maximum_masters_grade=max, discipline=discipline)
-        md.save()
+class MastersDegreeAPIView(APIView):
 
-    def getMastersDegreeOfTheStudent(id):
-        return MastersDegree.objects.filter(student_id=id)
+    def get_mastersdegree(self,pk):
+        try:
+            return MastersDegree.objects.get(pk = pk)
+        except MastersDegree.DoesNotExist:
+            return Http404
+
+    def get(self,request,pk = None,format = None):
+        if pk:
+            data = self.get_mastersdegree(pk)
+            serializer = MastersDegreeSerializer(data)
+        else:
+            data = MastersDegree.objects.all()
+            serializer = MastersDegreeSerializer(data, many=True)
+
+            return Response(serializer.data)
+
+    def post(self,request,format=None):
+        data = request.data
+        serializer = MastersDegreeSerializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        response = Response()
+
+        response.data = {
+            'message':'Document added succesfully',
+            'data':serializer.data
+        }
+
+        return response
+
+    def delete(self, request, pk, format = None):
+        document_to_delete = MastersDegree.objects.get(pk = pk)
+
+        document_to_delete.delete()
+
+        return Response({
+            'message':'Document deleted succesfully'
+        })
+
 
 class DoctorateViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorateSerializer
+    queryset = Doctorate.objects.all()
 
-    def addPhD(id, university, enrollment, graduation, grade, min, max, discipline):
-        d = Doctorate(student_id=id, university_nation=university, year_PhD_started=enrollment,
-                            year_PhD_ended=graduation, doctorate_grade=grade, minimum_doctorate_mark=min,
-                            maximum_doctorate_mark=max, discipline=discipline)
-        d.save()
+class DoctorateAPIView(APIView):
 
-    def getPhdByTheStudent(id):
-        return Doctorate.objects.filter(student_id=id)
+    def get_doctorate(self,pk):
+        try:
+            return Doctorate.objects.get(pk = pk)
+        except Doctorate.DoesNotExist:
+            return Http404
+
+    def get(self,request,pk = None,format = None):
+        if pk:
+            data = self.get_doctorate(pk)
+            serializer = DoctorateSerializer(data)
+        else:
+            data = Doctorate.objects.all()
+            serializer = DoctorateSerializer(data, many=True)
+
+            return Response(serializer.data)
+
+    def post(self,request,format=None):
+        data = request.data
+        serializer = DoctorateSerializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        response = Response()
+
+        response.data = {
+            'message':'Document added succesfully',
+            'data':serializer.data
+        }
+
+        return response
+
+    def delete(self, request, pk, format = None):
+        document_to_delete = Doctorate.objects.get(pk = pk)
+
+        document_to_delete.delete()
+
+        return Response({
+            'message':'Document deleted succesfully'
+        })
 
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+
+class StudentsAPIView(APIView):
+
+    def get_student(self,pk):
+        try:
+            return Student.objects.get(pk = pk)
+        except Student.DoesNotExist:
+            return Http404
+
+    def get(self,request,pk = None,format = None):
+        if pk:
+            data = self.get_student(pk)
+            serializer = StudentSerializer(data)
+        else:
+            data = Student.objects.all()
+            serializer = StudentSerializer(data, many=True)
+
+            return Response(serializer.data)
+
+    def post(self,request,format=None):
+        data = request.data
+        serializer = StudentSerializer(data=data)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        response = Response()
+
+        response.data = {
+            'message':'Document added succesfully',
+            'data':serializer.data
+        }
+
+        return response
+
+    def delete(self, request, pk, format = None):
+        document_to_delete = Student.objects.get(pk = pk)
+
+        document_to_delete.delete()
+
+        return Response({
+            'message':'Document deleted succesfully'
+        })
