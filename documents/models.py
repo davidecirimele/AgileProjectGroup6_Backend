@@ -68,6 +68,7 @@ class Doctorate(models.Model):
 
 class Student(models.Model):
     document_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
+    course_grade = models.CharField(max_length=20, default='BachelorsDegree')
     secondary_education = models.ForeignKey(SecondaryEducation, on_delete=models.PROTECT)
     bachelors_degree = models.ForeignKey(BachelorsDegree, on_delete=models.PROTECT)
     masters_degree = models.ForeignKey(MastersDegree, on_delete=models.PROTECT)

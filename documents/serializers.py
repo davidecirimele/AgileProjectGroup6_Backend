@@ -34,5 +34,5 @@ class DoctorateSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('document_id','secondary_education')
+        fields = ('document_id','course_grade','secondary_education','bachelors_degree','masters_degree','doctorate')
         model = Student
