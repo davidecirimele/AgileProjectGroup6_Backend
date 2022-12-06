@@ -13,7 +13,7 @@ class DocumentIDAPIView(APIView):
 
     def get_document(self,pk):
         try:
-            return Document.objects.get(id_number = pk)
+            return Document.objects.get(pk = pk)
         except Document.DoesNotExist:
             return Http404
 
@@ -25,7 +25,7 @@ class DocumentIDAPIView(APIView):
             data = Document.objects.all()
             serializer = DocumentSerializer(data, many=True)
 
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     def put(self, request, pk=None, format=None):
         document_to_update = Document.objects.get(pk=pk)
@@ -87,7 +87,7 @@ class DegreeAPIView(APIView):
             data = Degree.objects.all()
             serializer = DegreeSerializer(data, many=True)
 
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     def post(self,request,format=None):
         data = request.data
@@ -134,7 +134,7 @@ class StudentsAPIView(APIView):
             data = Student.objects.all()
             serializer = StudentSerializer(data, many=True)
 
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     def post(self,request,format=None):
         data = request.data
