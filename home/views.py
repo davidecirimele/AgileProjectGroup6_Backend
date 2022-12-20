@@ -78,6 +78,8 @@ class DocumentIDAPIView(APIView):
             'message':'Document deleted succesfully'
         })
 
+    
+
 class DegreeAPIView(APIView):
     serializer_class = DegreeSerializer
     queryset = models.Degree.objects.all()
@@ -123,6 +125,7 @@ class DegreeAPIView(APIView):
         return Response({
             'message':'Document deleted succesfully'
         })
+
 
 class StudentEnrolledAPIView(APIView):
     queryset = models.StudentEnrolled.objects.all()

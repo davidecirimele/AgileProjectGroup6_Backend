@@ -23,6 +23,7 @@ class DegreeSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('student_id', 'type_of_degree','university_nation', 'year_of_enrollment', 'year_of_graduation','discipline')
         model = Degree
+        
 
 class StudentEnrolledSerializer(serializers.ModelSerializer):
     class Meta:
