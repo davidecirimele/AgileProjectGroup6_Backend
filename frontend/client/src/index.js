@@ -10,9 +10,11 @@ import Document from "./pages/Document";
 import MBP from './pages/MBP';
 import Degree from "./pages/Degree";
 import Studentenrolled from "./pages/studentenrolled";
+import  Administrator from './pages/Administrator';
 import { Homepage } from './pages/Homepage';
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 
 
 const App = () => {
@@ -29,6 +31,7 @@ const App = () => {
           <Route path="/degree" element={<Degree/>}/>
           <Route path="/studentenrolled" element={<Studentenrolled/>}/>
           <Route path="/homepage" element={<Homepage/>}/>
+          <Route path="/administrator" element={<Administrator/>}/>
       </Routes>
     </BrowserRouter>
   );
