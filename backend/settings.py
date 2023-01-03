@@ -35,7 +35,6 @@ SITE_ID=1
 INSTALLED_APPS = [
 
     'home',
-    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,8 +42,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    'rest_framework',
+    'corsheaders',
+
+    'rest_framework.authtoken',
+    'allauth',
+    'rest_auth',
+    'rest_auth.registration',
+    'allauth.account',
+    'allauth.socialaccount',
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -132,6 +142,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
     "http://localhost:3000"
  ]
 
@@ -143,3 +154,29 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT",
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES':[
+        'rest_framework.permissions.IsAdminUser',
+    ],
+    'DEFAULT_SCHEMA_CLASS':'rest_framework.schemas.coreapi.AutoSchema',
+}
+
+REST_AUTH_SERIALIZERS = {
+    "USER_DETAILS_SERIALIZER": "home.serializers.StudentSerializer",
+    "LOGIN_SERIALIZER": "home.serializers.CustomLoginSerializer",
+}
+REST_AUTH_REGISTER_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "home.serializers.CustomRegisterSerializer",
+}
+
+AUTH_USER_MODEL = 'home.Student'
+ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_ADAPTER = 'home.adapter.CustomAccountAdapter'
+SITE_ID = 1

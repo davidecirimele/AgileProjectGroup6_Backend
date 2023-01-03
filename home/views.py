@@ -1,10 +1,25 @@
+import json
+
+from allauth.account.views import login
+from dj_rest_auth.registration.views import RegisterView
+from dj_rest_auth.views import LoginView
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
-from rest_framework import viewsets
-from .serializers import StudentSerializer,DisciplineSerializer,DocumentSerializer,DegreeSerializer,StudentEnrolledSerializer
+from rest_framework import viewsets, mixins, status
+
+from .models import Student, StudentEnrolled, Document, Degree
+from .permissions import IsOwner, IsHe, IsAdmin
+from .serializers import StudentSerializer, DisciplineSerializer, DocumentSerializer, DegreeSerializer, \
+    StudentEnrolledSerializer, CustomLoginSerializer, CustomRegisterSerializer
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import permissions
@@ -12,201 +27,133 @@ from . import models
 
 
 class DisciplineList(generics.ListCreateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+    ]
     queryset=models.Discipline.objects.all()
     serializer_class = DisciplineSerializer
 
-class DocumentIDAPIView(APIView):
+class StudentList(generics.ListCreateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsHe,
+    ]
+    serializer_class = StudentSerializer
+
+    def get_queryset(self):
+        return Student.objects.filter(username=self.request.user)
+class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+        IsHe,
+    ]
+    queryset=models.Student.objects.all()
+    serializer_class = StudentSerializer
+
+class DocumentList(generics.ListCreateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsOwner,
+    ]
     serializer_class = DocumentSerializer
-    queryset = models.Document.objects.all()
 
-    def get_document(self,pk):
-        try:
-            return models.Document.objects.get(pk = pk)
-        except Document.DoesNotExist:
-            return Http404
+    def get_queryset(self):
+        return Document.objects.filter(owner=self.request.user)
+    def perform_create(self, serializer):
+        return serializer.save(owner=self.request.user)
 
-    def get(self,request,pk = None,format = None):
-        if pk:
-            data = self.get_document(pk)
-            serializer = DocumentSerializer(data)
-        else:
-            data = models.Document.objects.all()
-            serializer = DocumentSerializer(data, many=True)
+class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsOwner,
+    ]
+    queryset=models.Document.objects.all()
+    serializer_class = DocumentSerializer
 
-        return Response(serializer.data)
-
-    def put(self, request, pk=None, format=None):
-        document_to_update = models.Document.objects.get(pk=pk)
-        serializer = DocumentSerializer(instance=document_to_update, data=request.data, partial=True)
-
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
-        response = Response()
-
-        response.data = {
-            'message': 'Documents Updated Successfully',
-            'data': serializer.data
-        }
-
-        return response
-
-    def post(self,request,format=None):
-        data = request.data
-        serializer = DocumentSerializer(data=data)
-
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
-        response = Response()
-
-        response.data = {
-            'message':'Document added succesfully',
-            'data':serializer.data
-        }
-
-        return response
-
-    def delete(self, request, pk, format = None):
-        document_to_delete = models.Document.objects.get(pk = pk)
-
-        document_to_delete.delete()
-
-        return Response({
-            'message':'Document deleted succesfully'
-        })
-
+    def perform_update(self, serializer):
+        return serializer.save(owner=self.request.user)
     
 
-class DegreeAPIView(APIView):
+class DegreeList(generics.ListCreateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+        IsOwner,
+    ]
     serializer_class = DegreeSerializer
-    queryset = models.Degree.objects.all()
 
-    def get_degree(self,pk):
-        try:
-            return models.Degree.objects.get(pk = pk)
-        except Degree.DoesNotExist:
-            return Http404
+    def get_queryset(self):
+        return Degree.objects.filter(student_id=self.request.user)
 
-    def get(self,request,pk = None,format = None):
-        if pk:
-            data = self.get_degree(pk)
-            serializer = DegreeSerializer(data)
-        else:
-            data = models.Degree.objects.all()
-            serializer = DegreeSerializer(data, many=True)
+class DegreeDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+        IsOwner,
+    ]
+    queryset=models.Degree.objects.all()
+    serializer_class = DegreeSerializer
 
-        return Response(serializer.data)
-
-    def post(self,request,format=None):
-        data = request.data
-        serializer = DegreeSerializer(data=data)
-
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
-        response = Response()
-
-        response.data = {
-            'message':'Document added succesfully',
-            'data':serializer.data
-        }
-
-        return response
-
-    def delete(self, request, pk, format = None):
-        document_to_delete = models.Degree.objects.get(pk = pk)
-
-        document_to_delete.delete()
-
-        return Response({
-            'message':'Document deleted succesfully'
-        })
-
-
-class StudentEnrolledAPIView(APIView):
-    queryset = models.StudentEnrolled.objects.all()
+class StudentEnrolledList(generics.ListCreateAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+        IsHe,
+    ]
     serializer_class = StudentEnrolledSerializer
 
-    def get_student(self,pk):
-        try:
-            return models.StudentEnrolled.objects.get(pk = pk)
-        except StudentEnrolled.DoesNotExist:
-            return Http404
+    def get_queryset(self):
+        return Degree.objects.filter(student_id=self.request.user)
 
-    def get(self,request,pk = None,format = None):
-        if pk:
-            data = self.get_student(pk)
-            serializer = StudentEnrolledSerializer(data)
-        else:
-            data = models.StudentEnrolled.objects.all()
-            serializer = StudentEnrolledSerializer(data, many=True)
+class StudentEnrolledDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+        IsHe
+    ]
+    queryset=models.StudentEnrolled.objects.all()
+    serializer_class = StudentEnrolledSerializer
 
+
+class CustomRegisterView(RegisterView):
+    queryset = Student.objects.all()
+
+class StudentAPIView(APIView):
+    @staticmethod
+    def get(request):
+        students = Student.objects.all()
+        serializer = StudentSerializer(students, many = True)
         return Response(serializer.data)
 
-    def post(self,request,format=None):
-        data = request.data
-        serializer = StudentEnrolledSerializer(data=data)
+    class GenericStudentAPIView(generics.GenericAPIView,mixins.ListModelMixin, mixins.CreateModelMixin,
+                                mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
+        serializer_class = StudentSerializer
+        queryset = Student.objects.all()
 
-        serializer.is_valid(raise_exception=True)
+        lookup_field = 'id'
 
-        serializer.save()
+        def get(self,request, username = None):
+            if username:
+                return self.retrieve(request)
+            else:
+                return self.list(request)
 
-        response = Response()
+        def post(self, request):
+            return self.create(request)
 
-        response.data = {
-            'message':'Student added succesfully',
-            'data':serializer.data
-        }
+        def put(self, request, username = None):
+            return self.update(request,username)
 
-        return response
+        def delete(self, request, username):
+            return self.destroy(request, username)
 
-    def put(self, request, pk=None, format=None):
-        student_to_update = models.StudentEnrolled.objects.get(pk=pk)
-        serializer = StudentEnrolledSerializer(instance=student_to_update, data=request.data, partial=True)
+    class Login(LoginView):
+        permission_classes = (permissions.AllowAny,)
 
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
-        response = Response()
-
-        response.data = {
-            'message': 'Student Updated Successfully',
-            'data': serializer.data
-        }
-
-        return response
-
-    def delete(self, request, pk, format = None):
-        document_to_delete = models.StudentEnrolled.objects.get(pk = pk)
-
-        document_to_delete.delete()
-
-        return Response({
-            'message':'Student deleted succesfully'
-        })
-
-class StudentList(generics.ListCreateAPIView):
-    queryset=models.Student.objects.all()
-    serializer_class = StudentSerializer
-    #permission_classes = [permissions.IsAuthenticated]
-
-class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset=models.Student.objects.all()
-    serializer_class = StudentSerializer
-    #permission_classes = [permissions.IsAuthenticated]
-
-@csrf_exempt
-def student_login(request):
-    username=request.POST['username']
-    password=request.POST['password']
-    studentData=models.Student.objects.get(username=username,password=password)
-    if studentData:
-        return JsonResponse({'bool':True})
-    else:
-        return JsonResponse({'bool': False})
-
+        def post(self, request, *args, **kwargs):
+            serializer = CustomLoginSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data['user']
+            login(request, user)
+            return super().post(request, format=None)
