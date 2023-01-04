@@ -7,6 +7,7 @@ urlpatterns = [
     path('student/', views.StudentList.as_view()),
     path('student/<str:pk>', views.StudentDetail.as_view()),
     path('discipline/', views.DisciplineList.as_view()),
+    path('discipline/<str:pk>', views.DisciplineDetail.as_view()),
     path("document/", views.DocumentList.as_view()),
     path("document/<str:pk>",views.DocumentDetail.as_view()),
     path("degree/", views.DegreeList.as_view()),

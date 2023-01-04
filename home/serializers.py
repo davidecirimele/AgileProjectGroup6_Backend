@@ -29,15 +29,19 @@ class DocumentSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner']
 
 class DegreeSerializer(serializers.ModelSerializer):
+    owner = serializers.CharField(default=get_user_model(), read_only=True)
+    year_of_enrollment = serializers.CharField()
+    year_of_graduation = serializers.CharField()
     class Meta:
-        fields = ('student_id', 'type_of_degree','university_nation', 'year_of_enrollment', 'year_of_graduation','discipline')
+        fields = ('owner', 'type_of_degree','university_nation', 'year_of_enrollment', 'year_of_graduation','discipline')
         model = Degree
         
 
 class StudentEnrolledSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('document_id','course_selected')
+        fields = ('student','course_selected')
         model = StudentEnrolled
+        read_only_fields = ['student']
 
 class CustomRegisterSerializer(RegisterSerializer):
     first_name = serializers.CharField(required=True)

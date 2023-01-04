@@ -17,4 +17,4 @@ class IsOwner(permissions.BasePermission):
 class IsHe(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
-        return request.user and obj.username == request.user
+        return request.user and obj.student == request.user

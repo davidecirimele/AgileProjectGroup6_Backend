@@ -101,7 +101,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
         app_label = 'home'
 
 class Discipline(models.Model):
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
         return self.name
@@ -121,20 +121,20 @@ class Document(models.Model):
 
 
 class Degree(models.Model):
-    student_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     type_of_degree = models.CharField(max_length=15)
     university_nation = models.CharField(max_length=15)
-    year_of_enrollment = models.DateField()
-    year_of_graduation = models.DateField()
-    discipline = models.ForeignKey(Discipline, on_delete=models.PROTECT)
+    year_of_enrollment = models.CharField(max_length = 4)
+    year_of_graduation = models.CharField(max_length=4)
+    discipline = models.ForeignKey(Discipline,to_field="name", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.student_id
+        return self.owner
 
 
 class StudentEnrolled(models.Model):
-    document_id = models.ForeignKey(Document, on_delete=models.PROTECT, to_field='id_number')
-    course_selected = models.CharField(max_length=20, default='BachelorsDegree')
+    student = models.ForeignKey(get_user_model(), to_field="username", on_delete=models.CASCADE, unique=True)
+    course_selected = models.ForeignKey(Discipline, to_field="name", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.document_id
+        return self.student

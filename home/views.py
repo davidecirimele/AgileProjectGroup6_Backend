@@ -33,6 +33,15 @@ class DisciplineList(generics.ListCreateAPIView):
     queryset=models.Discipline.objects.all()
     serializer_class = DisciplineSerializer
 
+class DisciplineDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin,
+    ]
+    queryset=models.Discipline.objects.all()
+    serializer_class = DisciplineSerializer
+
+
 class StudentList(generics.ListCreateAPIView):
     permission_classes = [
         IsAuthenticated,
@@ -78,38 +87,41 @@ class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
 class DegreeList(generics.ListCreateAPIView):
     permission_classes = [
         IsAuthenticated,
-        IsAdmin,
         IsOwner,
     ]
     serializer_class = DegreeSerializer
 
     def get_queryset(self):
-        return Degree.objects.filter(student_id=self.request.user)
+        return Degree.objects.filter(owner = self.request.user)
+    def perform_create(self, serializer):
+        return serializer.save(owner=self.request.user)
 
 class DegreeDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
         IsAuthenticated,
-        IsAdmin,
         IsOwner,
     ]
     queryset=models.Degree.objects.all()
     serializer_class = DegreeSerializer
 
+    def perform_update(self, serializer):
+        return serializer.save(owner=self.request.user)
+
 class StudentEnrolledList(generics.ListCreateAPIView):
     permission_classes = [
         IsAuthenticated,
-        IsAdmin,
         IsHe,
     ]
     serializer_class = StudentEnrolledSerializer
 
     def get_queryset(self):
-        return Degree.objects.filter(student_id=self.request.user)
+        return StudentEnrolled.objects.filter(student=self.request.user)
+    def perform_create(self, serializer):
+        return serializer.save(student=self.request.user)
 
 class StudentEnrolledDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [
         IsAuthenticated,
-        IsAdmin,
         IsHe
     ]
     queryset=models.StudentEnrolled.objects.all()
